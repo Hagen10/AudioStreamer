@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.cli.jvm.main
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -17,6 +19,26 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        externalNativeBuild {
+            ndkBuild {
+                var gstRoot : String
+
+                if (project.hasProperty("gstAndroidRoot"))
+                    gstRoot = project.property("gstAndroidRoot").toString()
+                else
+                    gstRoot = System.getenv("GSTREAMER_ROOT_ANDROID")
+
+                if (gstRoot == null)
+                    throw GradleException("GSTREAMER_ROOT_ANDROID must be set, or \"gstAndroidRoot\" must be defined in your gradle.properties in the top level directory of the unpacked universal GStreamer Android binaries")
+
+                arguments("NDK_APPLICATION_MK=jni/Application.mk", "GSTREAMER_JAVA_SRC_DIR=src", "GSTREAMER_ROOT_ANDROID=$gstRoot", "GSTREAMER_ASSETS_DIR=src/assets")
+
+                targets("tutorial-2")
+
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            }
         }
     }
 
@@ -47,7 +69,16 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    externalNativeBuild {
+        ndkBuild {
+            path("jni/Android.mk")
+        }
+    }
+
+    ndkVersion = "25.2.9519653"
 }
+
 
 dependencies {
 

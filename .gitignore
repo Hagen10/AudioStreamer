@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/assets/*
+/app/src/org
+app/gst-android-build
