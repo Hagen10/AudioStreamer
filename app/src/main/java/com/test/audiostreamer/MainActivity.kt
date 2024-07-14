@@ -1,10 +1,12 @@
 package com.test.audiostreamer
 
+import android.Manifest
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
 import org.freedesktop.gstreamer.GStreamer
 
 class MainActivity : ComponentActivity() {
@@ -74,6 +76,13 @@ class MainActivity : ComponentActivity() {
         findViewById<Button>(R.id.stop_button).setOnClickListener {
             nativePause()
         }
+
+        // Check Permissions Now
+        ActivityCompat.requestPermissions(
+            this@MainActivity,
+            arrayOf<String>(Manifest.permission.RECORD_AUDIO),
+            1
+        )
 
 
         nativeInit()

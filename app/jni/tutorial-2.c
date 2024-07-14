@@ -169,7 +169,7 @@ app_function (void *userdata)
   /* Build pipeline */
   data->pipeline =
       gst_parse_launch
-      ("audiotestsrc ! audioconvert ! audioresample ! autoaudiosink", &error);
+      ("openslessrc ! queue ! audioconvert ! audioresample ! autoaudiosink", &error);
   if (error) {
       __android_log_print (ANDROID_LOG_ERROR, "tutorial-2",
                            "Something happened parsing launch: %s", error->message);
