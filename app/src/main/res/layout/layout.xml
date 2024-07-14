@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:id="@+id/ip_address"
+        android:inputType="text"
+        android:autofillHints="ip address"
+        android:hint="@string/ip_hint"
+        android:textAlignment="center"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:id="@+id/port"
+        android:inputType="number"
+        android:autofillHints="port"
+        android:layout_marginBottom="50dp"
+        android:hint="@string/port_hint"
+        android:textAlignment="center"/>
+
+    <Button
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/stream_button"
+        android:text="@string/stream_button"/>
+    <Button
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/stop_button"
+        android:text="@string/stop_button"/>
+
+
+</LinearLayout>

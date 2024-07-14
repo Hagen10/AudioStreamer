@@ -171,6 +171,9 @@ app_function (void *userdata)
       gst_parse_launch
       ("audiotestsrc ! audioconvert ! audioresample ! autoaudiosink", &error);
   if (error) {
+      __android_log_print (ANDROID_LOG_ERROR, "tutorial-2",
+                           "Something happened parsing launch: %s", error->message);
+
     gchar *message =
         g_strdup_printf ("Unable to build pipeline: %s", error->message);
     g_clear_error (&error);
@@ -256,7 +259,10 @@ gst_native_play (JNIEnv * env, jobject thiz)
   if (!data)
     return;
   GST_DEBUG ("Setting state to PLAYING");
-  gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
+  GstStateChangeReturn res = gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
+
+    __android_log_print (ANDROID_LOG_ERROR, "tutorial-2",
+                         "Something happened when running pipeline: %u", res);
 }
 
 /* Set pipeline to PAUSED state */
@@ -316,7 +322,7 @@ JNI_OnLoad (JavaVM * vm, void *reserved)
     return 0;
   }
   jclass klass = (*env)->FindClass (env,
-      "main/java/com/test/audiostreamer/MainActivity");
+      "com/test/audiostreamer/MainActivity");
   (*env)->RegisterNatives (env, klass, native_methods,
       G_N_ELEMENTS (native_methods));
 
