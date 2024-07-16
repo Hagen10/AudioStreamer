@@ -4,6 +4,9 @@
 * figure out the assets location since it keeps complaining about not being able to find the ssl certs whatever
 * Not we're also relying on gstreamer-webrtc-1.0 gstreamer-sdp-1.0 gstreamer-video-1.0. Check if this is what
 fixed the "no element found openlessrc" or if in fact using $(GSTREAMER_PLUGINS_CODECS) is enough
+* Everything is hardcoded, native_init needs to start in onCreate for some reason, can I pass the ip in native_play?
+It should be possible to update pipeline while already created I believe.
+* Also, passing data->ip_address isn't working for some reason. HMMMMM
 
 ### Troubleshooting
 * "GSTREAMER_JAVA_SRC_DIR=src/main/java" has to be set to the parent directory of your MainActivity directory.

@@ -27,6 +27,7 @@ typedef struct _CustomData
   GMainContext *context;        /* GLib context used to run the main loop */
   GMainLoop *main_loop;         /* GLib main loop */
   gboolean initialized;         /* To avoid informing the UI multiple times about the initialization */
+  char *ip_address;
 } CustomData;
 
 /* These global variables cache values which are not changing during execution */
@@ -166,10 +167,22 @@ app_function (void *userdata)
   data->context = g_main_context_new ();
   g_main_context_push_thread_default (data->context);
 
+  // audioconvert ! audioresample ! opusenc ! rtpopuspay ! udpsink host=<receiver_ip> port=5000
+
+    char pipeline_description[512];
+
+    snprintf(pipeline_description, sizeof(pipeline_description),
+             "openslessrc ! queue ! audioconvert ! audioresample ! opusenc ! rtpopuspay ! udpsink host=%s port=5000",
+             "192.168.50.231");
+             //data->ip_address);
+
   /* Build pipeline */
   data->pipeline =
       gst_parse_launch
-      ("openslessrc ! queue ! audioconvert ! audioresample ! autoaudiosink", &error);
+              (pipeline_description, &error);
+      //("openslessrc ! queue ! audioconvert ! audioresample ! autoaudiosink", &error);
+
+
   if (error) {
       __android_log_print (ANDROID_LOG_ERROR, "tutorial-2",
                            "Something happened parsing launch: %s", error->message);
@@ -219,7 +232,7 @@ app_function (void *userdata)
 
 /* Instruct the native code to create its internal data structure, pipeline and thread */
 static void
-gst_native_init (JNIEnv * env, jobject thiz)
+gst_native_init (JNIEnv * env, jobject thiz, jstring ip_address)
 {
   CustomData *data = g_new0 (CustomData, 1);
   SET_CUSTOM_DATA (env, thiz, custom_data_field_id, data);
@@ -229,6 +242,8 @@ gst_native_init (JNIEnv * env, jobject thiz)
   GST_DEBUG ("Created CustomData at %p", data);
   data->app = (*env)->NewGlobalRef (env, thiz);
   GST_DEBUG ("Created GlobalRef for app object at %p", data->app);
+
+  data->ip_address = ip_address;
   pthread_create (&gst_app_thread, NULL, &app_function, data);
 }
 
@@ -301,7 +316,7 @@ gst_native_class_init (JNIEnv * env, jclass klass)
 
 /* List of implemented native methods */
 static JNINativeMethod native_methods[] = {
-  {"nativeInit", "()V", (void *) gst_native_init},
+  {"nativeInit", "(Ljava/lang/String;)V", (void *) gst_native_init},
   {"nativeFinalize", "()V", (void *) gst_native_finalize},
   {"nativePlay", "()V", (void *) gst_native_play},
   {"nativePause", "()V", (void *) gst_native_pause},

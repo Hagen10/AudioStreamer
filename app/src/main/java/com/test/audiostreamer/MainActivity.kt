@@ -2,7 +2,9 @@ package com.test.audiostreamer
 
 import android.Manifest
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
@@ -10,12 +12,14 @@ import androidx.core.app.ActivityCompat
 import org.freedesktop.gstreamer.GStreamer
 
 class MainActivity : ComponentActivity() {
-    private external fun nativeInit() // Initialize native code, build pipeline, etc
+    private external fun nativeInit(ipAddress : String) // Initialize native code, build pipeline, etc
     private external fun nativeFinalize() // Destroy pipeline and shutdown native code
     private external fun nativePlay() // Set pipeline to PLAYING
     private external fun nativePause() // Set pipeline to PAUSED
 
     private val native_custom_data: Long = 0 // Native code will use this to keep private data
+
+    private val IPREGEX : Regex = Regex("^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$")
     companion object {
         @JvmStatic
         private external fun nativeClassInit(): Boolean // Initialize native class: cache Method IDs for callbacks
@@ -70,7 +74,18 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.layout)
 
         findViewById<Button>(R.id.stream_button).setOnClickListener {
-            nativePlay()
+            var ipAddress = findViewById<EditText>(R.id.ip_address).text.toString()
+
+            if (IPREGEX.matches(ipAddress)) {
+                Log.w("MainActivity", String.format("Setting up streamer with ip %s", ipAddress))
+
+                //nativeInit(ipAddress)
+
+                nativePlay()
+            }
+            else
+                Log.w("MainActivity",String.format("IP WAS NOT VALID %s", ipAddress))
+
         }
 
         findViewById<Button>(R.id.stop_button).setOnClickListener {
@@ -83,10 +98,7 @@ class MainActivity : ComponentActivity() {
             arrayOf<String>(Manifest.permission.RECORD_AUDIO),
             1
         )
-
-
-        nativeInit()
-
+        nativeInit("192.168.50.231")
 //
 //        setContent {
 //            AudioStreamerTheme {

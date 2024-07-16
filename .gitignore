@@ -13,6 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/src/assets/*
+/app/src/assets
+/app/src/main/assets/
 /app/src/org
 app/gst-android-build
+/app/src/main/java/assets
+GStreamer.java
+app/src/main/java/org/freedesktop/gstreamer/androidmedia
