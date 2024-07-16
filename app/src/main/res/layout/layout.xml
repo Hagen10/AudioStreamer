@@ -29,13 +29,15 @@
     <Button
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:id="@+id/stream_button"
-        android:text="@string/stream_button"/>
+        android:id="@+id/configure_button"
+        android:text="@string/configure_button"/>
+
     <Button
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:id="@+id/stop_button"
-        android:text="@string/stop_button"/>
+        android:id="@+id/stream_button"
+        android:text="@string/stream_button"/>
+
 
 
 </LinearLayout>

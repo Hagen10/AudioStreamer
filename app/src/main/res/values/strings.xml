@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">AudioStreamer</string>
-    <string name="stream_button">Stream Audio</string>
-    <string name="stop_button">Stop</string>
+    <string name="stream_button">Start Streaming</string>
+    <string name="configure_button">Configure</string>
     <string name="ip_hint">Destination IP (10.0.0.1)</string>
     <string name="port_hint">Destination Port (53)</string>
 </resources>

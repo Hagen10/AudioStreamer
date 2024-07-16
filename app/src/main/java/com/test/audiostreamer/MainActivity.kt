@@ -12,7 +12,7 @@ import androidx.core.app.ActivityCompat
 import org.freedesktop.gstreamer.GStreamer
 
 class MainActivity : ComponentActivity() {
-    private external fun nativeInit(ipAddress : String) // Initialize native code, build pipeline, etc
+    private external fun nativeInit(ipAddress : String, port : String) // Initialize native code, build pipeline, etc
     private external fun nativeFinalize() // Destroy pipeline and shutdown native code
     private external fun nativePlay() // Set pipeline to PLAYING
     private external fun nativePause() // Set pipeline to PAUSED
@@ -20,6 +20,11 @@ class MainActivity : ComponentActivity() {
     private val native_custom_data: Long = 0 // Native code will use this to keep private data
 
     private val IPREGEX : Regex = Regex("^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$")
+    private val PORTREGEX = Regex("^[1-9][0-9]*$")
+
+    private var is_streaming : Boolean = false
+
+    private var is_configured : Boolean = false
     companion object {
         @JvmStatic
         private external fun nativeClassInit(): Boolean // Initialize native class: cache Method IDs for callbacks
@@ -61,7 +66,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-
         // Initialize GStreamer and warn if it fails
         try {
             GStreamer.init(this)
@@ -73,23 +77,46 @@ class MainActivity : ComponentActivity() {
 
         setContentView(R.layout.layout)
 
-        findViewById<Button>(R.id.stream_button).setOnClickListener {
+        findViewById<Button>(R.id.configure_button).setOnClickListener {
             var ipAddress = findViewById<EditText>(R.id.ip_address).text.toString()
+            var port = findViewById<EditText>(R.id.port).text.toString()
 
-            if (IPREGEX.matches(ipAddress)) {
-                Log.w("MainActivity", String.format("Setting up streamer with ip %s", ipAddress))
+            if (is_configured)
+                Log.e(
+                    "MainActivity",
+                    String.format("Streamer was already configured, restart app")
+                )
+                else {
+                if (IPREGEX.matches(ipAddress) and PORTREGEX.matches(port)) {
+                    Log.w(
+                        "MainActivity",
+                        String.format("Setting up streamer with ip %s and port %s", ipAddress, port)
+                    )
+                    nativeInit(ipAddress, port)
 
-                //nativeInit(ipAddress)
-
-                nativePlay()
+                    is_configured = true
+                } else
+                    Log.w(
+                        "MainActivity",
+                        String.format("IP OR PORT WAS NOT VALID %s - %s", ipAddress, port)
+                    )
             }
-            else
-                Log.w("MainActivity",String.format("IP WAS NOT VALID %s", ipAddress))
-
         }
 
-        findViewById<Button>(R.id.stop_button).setOnClickListener {
-            nativePause()
+        findViewById<Button>(R.id.stream_button).setOnClickListener {
+            if (is_streaming) {
+                // Stopping streaming
+                nativePause()
+                findViewById<Button>(R.id.stream_button).text = "Start Streaming"
+                is_streaming = false
+            } else {
+                if (is_configured) {
+                    nativePlay()
+                    is_streaming = true
+                    findViewById<Button>(R.id.stream_button).text = "Stop Streaming"
+                } else
+                    Log.w("MainActivity", String.format("Streamer is not configured!"))
+            }
         }
 
         // Check Permissions Now
@@ -98,18 +125,6 @@ class MainActivity : ComponentActivity() {
             arrayOf<String>(Manifest.permission.RECORD_AUDIO),
             1
         )
-        nativeInit("192.168.50.231")
-//
-//        setContent {
-//            AudioStreamerTheme {
-//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    Greeting(
-//                        name = "Android",
-//                        modifier = Modifier.padding(innerPadding)
-//                    )
-//                }
-//            }
-//        }
     }
 
     override fun onDestroy() {
@@ -117,19 +132,3 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 }
-
-//@Composable
-//fun Greeting(name: String, modifier: Modifier = Modifier) {
-//    Text(
-//        text = "Hello $name!",
-//        modifier = modifier
-//    )
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun GreetingPreview() {
-//    AudioStreamerTheme {
-//        Greeting("Android")
-//    }
-//}

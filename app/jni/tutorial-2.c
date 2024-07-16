@@ -28,6 +28,7 @@ typedef struct _CustomData
   GMainLoop *main_loop;         /* GLib main loop */
   gboolean initialized;         /* To avoid informing the UI multiple times about the initialization */
   char *ip_address;
+  char *port;
 } CustomData;
 
 /* These global variables cache values which are not changing during execution */
@@ -171,10 +172,13 @@ app_function (void *userdata)
 
     char pipeline_description[512];
 
+    __android_log_print (ANDROID_LOG_INFO, "tutorial-2",
+                         "Setting up pipeline with %s - %s", data->ip_address, data->port);
+
     snprintf(pipeline_description, sizeof(pipeline_description),
-             "openslessrc ! queue ! audioconvert ! audioresample ! opusenc ! rtpopuspay ! udpsink host=%s port=5000",
-             "192.168.50.231");
-             //data->ip_address);
+             "openslessrc ! queue ! audioconvert ! audioresample ! opusenc ! rtpopuspay ! udpsink host=%s port=%s",
+             //"192.168.50.231");
+             data->ip_address, data->port);
 
   /* Build pipeline */
   data->pipeline =
@@ -232,7 +236,7 @@ app_function (void *userdata)
 
 /* Instruct the native code to create its internal data structure, pipeline and thread */
 static void
-gst_native_init (JNIEnv * env, jobject thiz, jstring ip_address)
+gst_native_init (JNIEnv * env, jobject thiz, jstring ip_address, jstring port)
 {
   CustomData *data = g_new0 (CustomData, 1);
   SET_CUSTOM_DATA (env, thiz, custom_data_field_id, data);
@@ -243,7 +247,19 @@ gst_native_init (JNIEnv * env, jobject thiz, jstring ip_address)
   data->app = (*env)->NewGlobalRef (env, thiz);
   GST_DEBUG ("Created GlobalRef for app object at %p", data->app);
 
-  data->ip_address = ip_address;
+  const char *ip = (*env)->GetStringUTFChars(env, ip_address, NULL);
+  const char *dest_port = (*env)->GetStringUTFChars(env, port, NULL);
+
+  data->ip_address = (char *)malloc(strlen(ip) + 1);  // +1 for the null terminator
+  data->port = (char *)malloc(strlen(dest_port) + 1);  // +1 for the null terminator
+
+  strcpy(data->ip_address, ip);
+  strcpy(data->port, dest_port);
+
+    // Release the jstring resources
+  (*env)->ReleaseStringUTFChars(env, ip_address, ip);
+  (*env)->ReleaseStringUTFChars(env, port, port);
+
   pthread_create (&gst_app_thread, NULL, &app_function, data);
 }
 
@@ -316,7 +332,7 @@ gst_native_class_init (JNIEnv * env, jclass klass)
 
 /* List of implemented native methods */
 static JNINativeMethod native_methods[] = {
-  {"nativeInit", "(Ljava/lang/String;)V", (void *) gst_native_init},
+  {"nativeInit", "(Ljava/lang/String;Ljava/lang/String;)V", (void *) gst_native_init},
   {"nativeFinalize", "()V", (void *) gst_native_finalize},
   {"nativePlay", "()V", (void *) gst_native_play},
   {"nativePause", "()V", (void *) gst_native_pause},
