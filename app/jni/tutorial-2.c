@@ -236,7 +236,7 @@ app_function (void *userdata)
 
 /* Instruct the native code to create its internal data structure, pipeline and thread */
 static void
-gst_native_init (JNIEnv * env, jobject thiz, jstring ip_address, jstring port)
+gst_native_init (JNIEnv * env, jobject thiz, jstring j_ip, jstring j_port)
 {
   CustomData *data = g_new0 (CustomData, 1);
   SET_CUSTOM_DATA (env, thiz, custom_data_field_id, data);
@@ -247,18 +247,19 @@ gst_native_init (JNIEnv * env, jobject thiz, jstring ip_address, jstring port)
   data->app = (*env)->NewGlobalRef (env, thiz);
   GST_DEBUG ("Created GlobalRef for app object at %p", data->app);
 
-  const char *ip = (*env)->GetStringUTFChars(env, ip_address, NULL);
-  const char *dest_port = (*env)->GetStringUTFChars(env, port, NULL);
+  const char *dest_ip = (*env)->GetStringUTFChars(env, j_ip, NULL);
+  const char *dest_port = (*env)->GetStringUTFChars(env, j_port, NULL);
 
-  data->ip_address = (char *)malloc(strlen(ip) + 1);  // +1 for the null terminator
+  data->ip_address = (char *)malloc(strlen(dest_ip) + 1);  // +1 for the null terminator
+
   data->port = (char *)malloc(strlen(dest_port) + 1);  // +1 for the null terminator
 
-  strcpy(data->ip_address, ip);
+  strcpy(data->ip_address, dest_ip);
   strcpy(data->port, dest_port);
 
     // Release the jstring resources
-  (*env)->ReleaseStringUTFChars(env, ip_address, ip);
-  (*env)->ReleaseStringUTFChars(env, port, port);
+  (*env)->ReleaseStringUTFChars(env, j_ip, dest_ip);
+  (*env)->ReleaseStringUTFChars(env, j_port, dest_port);
 
   pthread_create (&gst_app_thread, NULL, &app_function, data);
 }
